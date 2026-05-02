@@ -75,7 +75,12 @@
         </div>
         <div class="field">
           <label>Cargo</label>
-          <input type="text" bind:value={novoServidor.cargo} placeholder="Ex: Técnico de Informática" required />
+          <select bind:value={novoServidor.cargo} required>
+            <option value="" disabled selected>Selecione um cargo...</option>
+            <option value="admin">Admin</option>
+            <option value="servidor">Servidor</option>
+            <option value="educador">Educador</option>
+          </select>
         </div>
         <div class="field">
           <label>Matrícula</label>
@@ -105,11 +110,11 @@
         <div class="table-header">
           <div class="th flex-2">Nome</div>
           <div class="th flex-2">E-mail</div>
+          <div class="th flex-1">Cargo</div> <!-- Nova coluna adicionada -->
           <div class="th flex-1">Matrícula</div>
           <div class="th flex-1">Ações</div>
         </div>
         
-        <!-- Esta div rola se houver muitos registros -->
         <div class="table-body">
           {#each servidores as s, index}
             <div class="table-row {index % 2 === 0 ? 'even' : 'odd'}">
@@ -121,6 +126,11 @@
               <div class="td flex-2">
                 <span class="material-symbols-outlined icon-tiny">mail</span>
                 <span class="text-truncate">{s.email}</span>
+              </div>
+
+              <!-- Nova célula com o Cargo -->
+              <div class="td flex-1">
+                <span class="badge-cargo">{s.cargo}</span>
               </div>
               
               <div class="td flex-1">
@@ -163,13 +173,13 @@
 
   /* APP BAR */
   .app-bar { 
-    background-color: var(--white); /* Fundo agora é branco */
+    background-color: var(--white);
     padding: 12px 24px; 
     display: flex; 
     flex-direction: row; 
     justify-content: space-between; 
     align-items: center; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05); /* Sombra suave para separar do fundo */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     z-index: 10;
   }
  .title-section { display: flex; flex-direction: column; }
@@ -243,9 +253,44 @@
   form { display: flex; flex-direction: column; gap: 1.2rem; }
   .field { display: flex; flex-direction: column; gap: 0.5rem; }
   label { font-weight: 600; font-size: 0.85rem; color: #64748b; }
-  input { padding: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-input); color: #1e293b; border-radius: 8px; font-size: 0.9rem; transition: border-color 0.2s; }
-  input:focus { border-color: var(--blue-primary); outline: none; background: #fff; }
-
+ input { 
+    padding: 0.65rem; 
+    background: var(--bg-input); 
+    border: 1px solid var(--border-input); 
+    color: #1e293b; 
+    border-radius: 8px; 
+    font-size: 0.9rem; 
+    transition: border-color 0.2s; 
+    width: 100%; 
+  }
+  input:focus { 
+    border-color: var(--blue-primary); 
+    outline: none; 
+    background: #fff; 
+  }
+  select {
+    padding: 0.65rem;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-input);
+    color: #1e293b;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    width: 100%;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+  }
+  select:focus {
+    border-color: var(--blue-primary);
+    outline: none;
+    background-color: #fff;
+  }
   .bottom-action { margin-top: 1rem; display: flex; justify-content: center; }
   .btn-primary { width: 100%; background-color: var(--blue-primary); color: var(--white); border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: background 0.2s; }
   .btn-primary:hover { background-color: var(--blue-dark); }
