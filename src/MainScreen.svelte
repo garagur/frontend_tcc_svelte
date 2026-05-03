@@ -1,21 +1,41 @@
 <script>
+
+
   export let matricula = '';
+  export let usuario = null;
+  export let token = '';     
   export let aoSair;
   export let onNavigate;
   const agendamentos = [
     { nome: 'João Silva', item: 'Sala 101', dataInicio: '28/04/2025 08:00', dataFim: '28/04/2025 10:00' },
-    { nome: 'Maria Souza', item: 'Projetor HD', dataInicio: '28/04/2025 09:00', dataFim: '28/04/2025 11:00' },
+    { nome: 'Maria Souza', item: 'Projetor HD', dataInicio: '28/04/202509:00', dataFim: '28/04/2025 11:00' },
     { nome: 'Carlos Lima', item: 'Sala de Reunião', dataInicio: '29/04/2025 14:00', dataFim: '29/04/2025 16:00' },
     { nome: 'Ana Paula', item: 'Notebook Dell', dataInicio: '30/04/2025 07:00', dataFim: '30/04/2025 12:00' },
   ];
 
+  async function logout() {
+    try {
+      await fetch('http://localhost:8000/api/eafinware/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token || localStorage.getItem('token')}`,
+        }
+      });
+    } catch (e) {
+      console.error('Erro ao deslogar:', e);
+    } finally {
+      aoSair();
+    }
+  }
+
   function navigate(path, params = null) {
     if (path === 'Pop') {
-      aoSair();
+      logout();
       return;
     }
     
-   if (onNavigate) {
+    if (onNavigate) {
       onNavigate(path);
     }
     console.log(`Navegando para: ${path}`, params);

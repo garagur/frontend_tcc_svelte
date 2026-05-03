@@ -2,20 +2,66 @@
   import MainScreen from './MainScreen.svelte';
   import CadastroServidor from './CadastroServidor.svelte';
   import PrimeiroLogin from './PrimeiroLogin.svelte';
-  let telaAtual = 'login'; 
+
+  let telaAtual = 'login';
   let loginMatricula = '';
   let loginSenha = '';
+  let erroLogin = '';
+  let carregando = false;
 
-  function entrar() {
-    if (loginMatricula && loginSenha) {
-     if (loginMatricula === '123456') { 
+  // Token e dados do usuário ficam salvos aqui
+  let token = '';
+  let usuarioLogado = null;
+
+  async function entrar() {
+    if (!loginMatricula || !loginSenha) {
+      erroLogin = 'Preencha a matrícula e a senha!';
+      return;
+    }
+
+    carregando = true;
+    erroLogin = '';
+
+    try {
+      const resposta = await fetch('http://localhost:8000/api/eafinware/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          matricula: loginMatricula,
+          password: loginSenha,
+        }),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        // A API retornou erro (401, 422, etc.)
+        erroLogin = dados.message || 'Credenciais inválidas.';
+        return;
+      }
+
+      // Salva token e usuário
+      token = dados.token;
+      usuarioLogado = dados.user;
+
+      // Guarda no localStorage para persistir ao recarregar a página
+      localStorage.setItem('token', token);
+      localStorage.setItem('usuario', JSON.stringify(usuarioLogado));
+
+      // Lógica de navegação igual à anterior
+      if (usuarioLogado.cargo === 'primeiroLogin') {
         mudarTela('primeiroLogin');
       } else {
-
         mudarTela('home');
       }
-    } else {
-      alert("Preencha a matrícula e a senha!");
+
+    } catch (e) {
+      erroLogin = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+    } finally {
+      carregando = false;
     }
   }
 
@@ -23,6 +69,10 @@
     telaAtual = 'login';
     loginMatricula = '';
     loginSenha = '';
+    token = '';
+    usuarioLogado = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
   }
 
   function mudarTela(novaTela) {
@@ -31,7 +81,6 @@
 </script>
 
 {#if telaAtual === 'login'}
-  <!-- Tela de Login Original -->
   <div class="login-wrapper">
     <div class="card">
       <h2>Acesso ao Sistema</h2>
@@ -44,14 +93,20 @@
           <label for="s">Senha</label>
           <input id="s" type="password" bind:value={loginSenha} placeholder="******" required />
         </div>
-        <button type="submit" class="btn-main">Entrar</button>
+
+        <!-- Mensagem de erro da API -->
+        {#if erroLogin}
+          <p class="erro">{erroLogin}</p>
+        {/if}
+
+        <button type="submit" class="btn-main" disabled={carregando}>
+          {carregando ? 'Entrando...' : 'Entrar'}
+        </button>
       </form>
     </div>
   </div>
 
 {:else if telaAtual === 'primeiroLogin'}
-  <!-- TELA NOVA AQUI! -->
-  <!-- Passamos a matrícula para ela e a função para deslogar ao terminar -->
   <PrimeiroLogin 
     matricula={loginMatricula} 
     onConcluido={deslogar} 
@@ -59,13 +114,17 @@
 
 {:else if telaAtual === 'home'}
   <MainScreen 
-    matricula={loginMatricula} 
+    matricula={loginMatricula}
+    usuario={usuarioLogado}
+    token={token}
     aoSair={deslogar} 
     onNavigate={mudarTela} 
   />
 
 {:else if telaAtual === 'cadastroServidor'}
-  <CadastroServidor onSair={() => mudarTela('home')} />
+  <CadastroServidor 
+    onSair={() => mudarTela('home')} 
+    {token}/>
 {/if}
 
 <style>
